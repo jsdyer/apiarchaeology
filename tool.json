@@ -1,16 +1,22 @@
 {
-  "id": "coolcode-tool-template",
-  "title": "CoolCode Tool Starter",
-  "description": "A browser-only example that trims lines and removes exact duplicates.",
-  "category": "security",
-  "tags": ["text", "lines", "duplicates"],
+  "id": "apiarchaeology",
+  "title": "API Archaeology",
+  "description": "Inspect published API definitions, compare operations and schemas, and follow dated specification captures.",
+  "category": "developer",
+  "tags": [
+    "api",
+    "openapi",
+    "schemas",
+    "history",
+    "comparison"
+  ],
   "icon": "scan-search",
-  "url": "/coolcode-tool-template/",
-  "source": "https://github.com/jsdyer/coolcode-tool-template",
+  "url": "/apiarchaeology/",
+  "source": "https://github.com/jsdyer/apiarchaeology",
   "hosting": "project",
   "access": "browser",
   "data_info": {
-    "mode": "local",
-    "detail": "The browser reads the text you paste and compares its lines."
+    "mode": "mixed",
+    "detail": "Weekly retained APIs.guru definitions, with optional local OpenAPI JSON comparison."
   }
 }

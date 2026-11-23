@@ -1,34 +1,44 @@
 <!doctype html>
-<html lang="en-CA">
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="{{DESCRIPTION}}">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{DESCRIPTION}}"><meta name="color-scheme" content="light">
   <title>{{TITLE}} · CoolCode</title>
   <link rel="stylesheet" href="./style.css">
   <script type="module" src="./app.mjs"></script>
   {{VISIT_COUNTER}}
 </head>
-<body data-tool-id="{{TOOL_ID}}">
-  <a class="skip" href="#main">Skip to content</a>
-  <header><a href="https://coolcode.ca/">← CoolCode.ca</a><a href="{{SOURCE_URL}}">Source &amp; instructions ↗</a></header>
-  <main id="main">
-    <p class="eyebrow">Browser tool starter</p>
-    <h1>{{TITLE}}</h1>
-    <p class="intro">{{DESCRIPTION}}</p>
-    <section aria-labelledby="example-title">
-      <h2 id="example-title">Clean a list</h2>
-      <p>Trim spaces, skip blank lines and remove exact duplicates. Capitalization stays distinct.</p>
-      <div class="panels">
-        <div><label for="input">Your lines</label><textarea id="input" rows="10" maxlength="100000" spellcheck="false" placeholder="Paste one item per line"></textarea></div>
-        <div><label for="output">Cleaned lines</label><textarea id="output" rows="10" readonly spellcheck="false"></textarea></div>
-      </div>
-      <div class="actions"><button id="sample" type="button">Load example</button><button id="clear" type="button">Clear</button><button id="copy" type="button" hidden>Copy result</button></div>
-      <p id="status" role="status" aria-live="polite">Paste a list to begin.</p>
-      <noscript><p>This tool needs JavaScript to process your text. The source is available above.</p></noscript>
+<body data-tool="{{TOOL_ID}}">
+  <header class="topbar"><a class="brand" href="https://coolcode.ca/">CoolCode<span>.ca</span></a><div class="top-links"><a href="#method">Sources & method</a><a href="{{SOURCE_URL}}">Code ↗</a></div></header>
+  <main>
+    <section class="hero" aria-labelledby="title">
+      <div class="hero-copy"><p class="eyebrow"><span class="signal"></span> An atlas of published interfaces</p><h1 id="title">API<br><em>Archaeology.</em></h1><p class="intro">An endpoint disappears. An authentication rule changes. A schema grows. Read the evidence in the definition.</p><a class="text-link" href="#workbench">Explore the collection <span>↓</span></a></div>
+      <div class="hero-art" aria-hidden="true"><div class="art-label">SPECIMEN / OPENAPI</div><div class="stratum"><span>03</span><code>GET /artifacts</code><b>+</b></div><div class="stratum"><span>02</span><code>security: bearer</code><b>~</b></div><div class="stratum"><span>01</span><code>schema: object</code><b>↳</b></div><div class="art-foot">DEFINITIONS, NOT LIVE SERVICE TESTS</div></div>
     </section>
-    <aside aria-label="Privacy"><strong>Stays on your device.</strong> The browser processes your text in this tab. Reloading clears it.</aside>
+    <section class="collection-strip" aria-label="Collection summary"><div><strong id="api-count">—</strong><span>watched APIs</span></div><div><strong id="version-count">—</strong><span>published definitions</span></div><div><strong id="capture-count">—</strong><span>dated captures</span></div><div class="collection-date"><span>Latest collection</span><strong id="latest-date">Loading…</strong><small>Weekly capture · UTC</small></div></section>
+    <div id="notice" class="notice" role="status" aria-live="polite">Loading the retained specification collection…</div>
+    <section id="workbench" class="workbench" aria-labelledby="workbench-title">
+      <div class="section-heading"><div><p class="eyebrow">01 / The workbench</p><h2 id="workbench-title">Follow the interface.</h2></div><button id="use-collection" class="button secondary" hidden>Return to collection</button></div>
+      <div class="selection-panel">
+        <label class="api-select">API in the collection<select id="api" disabled><option>Loading…</option></select></label>
+        <label>From definition<select id="before" disabled><option value="">Inventory only</option></select></label>
+        <label>To definition<select id="after" disabled><option>Loading…</option></select></label>
+      </div>
+      <div class="comparison-heading"><div><h3 id="comparison-title">Reading published definitions</h3><p id="comparison-note">The explorer reads archived JSON specifications. It does not send requests to their described endpoints.</p></div><div class="exports"><button id="export-json" class="button secondary" disabled>Save evidence JSON ↓</button><button id="export-csv" class="button quiet" disabled>Operations CSV ↓</button></div></div>
+      <div id="sources" class="source-pair"></div>
+      <div id="warnings" class="warnings" role="status"></div>
+      <div class="result-stats" aria-label="Comparison totals"><div><span>Operations in target</span><strong id="total-operations">—</strong></div><div><span>Added</span><strong id="count-added" class="green">—</strong></div><div><span>Removed</span><strong id="count-removed" class="red">—</strong></div><div><span>Changed</span><strong id="count-changed" class="amber">—</strong></div><div><span>Deprecated in target</span><strong id="count-deprecated">—</strong></div></div>
+      <div class="filters"><label class="search">Find an operation<input id="search" type="search" placeholder="Path, summary or change type…" autocomplete="off"></label><label>Show<select id="status"><option value="all">All operations</option><option value="added">Added</option><option value="removed">Removed</option><option value="changed">Changed</option><option value="unchanged">Unchanged</option><option value="deprecated">Deprecated in target</option></select></label><label>Method<select id="method-filter"><option value="all">Every method</option><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>HEAD</option><option>OPTIONS</option><option>TRACE</option></select></label></div>
+      <div class="operation-layout"><section class="operation-list" aria-labelledby="operations-title"><div class="list-heading"><h3 id="operations-title">Operation index</h3><span id="shown-count">0 entries</span></div><div id="operations"></div><button id="show-more" class="button secondary" hidden>Show 100 more operations</button></section><aside id="detail" class="detail" aria-label="Selected operation evidence"><p>Select an operation to inspect its definition.</p></aside></div>
+      <details class="schemas-panel"><summary>Shared schema inventory <span id="schema-count"></span></summary><p>Named schemas are compared structurally. Referenced local schemas also contribute to operation changes. This is a change inventory, not a compatibility verdict.</p><div id="schemas" class="schema-list"></div></details>
+    </section>
+    <section class="lower-grid">
+      <section class="local-panel" aria-labelledby="local-title"><p class="eyebrow">02 / Bring your own evidence</p><h2 id="local-title">Compare two local files.</h2><p>OpenAPI 3.x or Swagger 2.0, exported as JSON. Your files stay in this browser tab. Remote references are never fetched.</p><form id="local-form"><label>Before · optional for inventory<input id="local-before" type="file" accept=".json,application/json"></label><label>After · required<input id="local-after" type="file" accept=".json,application/json" required></label><button class="button primary" type="submit">Inspect local definitions →</button><small>10 MB per file · JSON only · no storage</small></form><p id="local-status" class="local-status" role="status"></p></section>
+      <section class="history-panel" aria-labelledby="history-title"><p class="eyebrow">03 / The field notebook</p><h2 id="history-title">A history that starts here.</h2><p id="history-note">Retained captures document what the directory served when collection ran. They are not API release dates.</p><ol id="history"></ol></section>
+    </section>
+    <section id="method" class="method-panel" aria-labelledby="method-title"><p class="eyebrow">Source notes / Read before interpreting</p><h2 id="method-title">A specification is a promise,<br>not a measurement.</h2><div class="method-grid"><div><h3>What gets compared</h3><p>Method and exact path identify an operation. Changes cover authentication, deprecation, inherited parameters, request bodies, responses, server addresses and documentation. Local schema references are followed, including recursive references.</p><p>Arrays retain their order except security alternatives, scopes and merged parameters. Reordering examples or schema alternatives can therefore appear as a structural change.</p></div><div><h3>What these dates mean</h3><p>“Captured” is when this project fetched a definition. “Directory updated” comes from APIs.guru and can be much older. Directory versions may represent different API generations; they are not necessarily a complete history or the provider's current release.</p><p>The initial capture has no earlier collection baseline. Multiple listed versions can still be compared. Weekly collection adds future observations without rewriting earlier ones.</p></div><div><h3>Where the evidence comes from</h3><p><a href="https://github.com/APIs-guru/openapi-directory">APIs.guru OpenAPI Directory</a> supplies the public definitions and their original-source links. Each definition retains its source license metadata. <a href="https://spec.openapis.org/oas/v3.0.3.html">OpenAPI</a> describes the format.</p><p>External references, callbacks and webhooks are not resolved or compared as standalone operations. We do not assess exploitability, runtime behaviour or whether a change is safe for your client. No credentials or target-service requests are used.</p></div></div></section>
+    <nav class="related" aria-label="Related tools"><span>Keep investigating</span><a href="https://coolcode.ca/govdatagaps/">Government Data Gaps ↗</a><a href="https://coolcode.ca/researchledger/">Research Ledger ↗</a><a href="https://coolcode.ca/">All CoolCode tools ↗</a></nav>
   </main>
-  <footer>Part of <a href="https://coolcode.ca/">the CoolCode collection</a>. {{ISSUE_LINK}}</footer>
+  <footer><p>API Archaeology · Inspect the layers. Keep the evidence.</p><div><a href="{{SOURCE_URL}}">Source & collection workflow</a>{{ISSUE_LINK}}</div></footer>
 </body>
 </html>

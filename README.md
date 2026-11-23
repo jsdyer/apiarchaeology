@@ -1,116 +1,71 @@
-# CoolCode browser tool template
+# API Archaeology
 
-A starting point for independent tools at `coolcode.ca/<repo>/`: a working local-text
-example, responsive UI, Python standard-library build, Node tests, PR checks and Pages
-publication. No npm install is needed.
+A public, browser-based explorer for published API definitions. Compare endpoint inventories, authentication requirements, deprecation flags, parameters and response schemas using retained evidence, then export a dated report.
 
-## Using the example
+**[Open API Archaeology](https://coolcode.ca/apiarchaeology/)** · [CoolCode](https://coolcode.ca/)
 
 <!-- coolcode:guide -->
-The first occurrence of each trimmed line keeps its place. Compare the output with the original text before copying the result.
+API Archaeology watches six public API definitions in the APIs.guru directory: Apicurio Registry, Canada Holidays, APIs.guru itself, NASA APOD, NASA Asteroids and Wikimedia. Select an API, then a “from” and “to” definition. Each choice includes the version and actual collection date. The first capture includes two genuine Apicurio versions, so a meaningful comparison is available immediately; other single-version APIs start as inventories until another collection is retained.
+
+Search by method, path, summary or change type. Select an operation for authentication, parameters, response codes and field-level evidence. The shared-schema inventory provides a second view of additions, removals and changed definitions. “Changed” means the specification differs; it is not a compatibility judgment or proof that a live service behaves differently. Directory update dates can be old and are not provider release dates.
+
+You can also select two local OpenAPI 3.x or Swagger 2.0 JSON files (10 MB each); omit the first file to inspect an inventory. These files stay in the current browser tab and are not uploaded or saved. YAML is not supported. Export JSON for the complete compared evidence and source hashes, or CSV for the operation inventory.
+
+Collection runs weekly on Tuesday at 07:13 UTC through GitHub Actions, subject to scheduler delays. The workflow can also be run manually with “Capture fresh public definitions before building” enabled. All definitions must validate and all checks must pass before new data is committed and the site is deployed. Earlier captures remain available. No keys or API registrations are needed: the collector reads specification documents only and never invokes the APIs they describe.
 <!-- /coolcode:guide -->
 
-For a real tool, replace this paragraph with one or two plain-text sentences
-about an example, a limit or how to interpret the results. Keep the source,
-coverage, refresh behaviour and a worked example in this README as appropriate.
-When updating a tool, revise any details its behaviour has changed and keep the
-homepage's shorter data-source sentence in `tool.json` accurate.
-The hub imports the marked note into the catalogue README.
+## Evidence and scope
 
-## One-time template setup
+- **Collection:** [APIs.guru public directory API](https://api.apis.guru/v2/list.json) and the exact `swaggerUrl` definitions returned for the six watched entries. [Directory documentation](https://apis.guru/api-doc) and [source repository](https://github.com/APIs-guru/openapi-directory).
+- **Formats:** Swagger 2.0 and OpenAPI 3.x `paths`. [OpenAPI specification](https://spec.openapis.org/oas/v3.0.3.html).
+- **Source licenses:** each captured definition retains its original `info.license` and `x-origin` metadata. APIs.guru's [license explanation](https://github.com/APIs-guru/openapi-directory#licenses) distinguishes contributed material from definitions collected from other sources. An open specification does not imply unrestricted access to the underlying service.
+- **Comparison:** exact uppercase HTTP method plus path. Root and operation security, applicable security schemes, inherited path parameters (with operation overrides), request bodies, responses, deprecation, servers and documentation are compared. Swagger 2 body parameters appear under parameters. Local references contribute their resolved content; cycles terminate at an explicit reference marker. Named shared schemas are compared separately in their raw form.
+- **Semantics:** object key order is ignored. Security alternatives/scopes and merged parameters are normalized; other arrays retain source order. Structural changes may be editorial or reordered examples. Path renames appear as a removal plus addition. Matching paths across versions may have different servers; server changes are reported.
+- **Limits:** external references are not fetched; unresolved local references are identified. Callbacks and webhooks are not separate operations in the inventory. Expansion stops after 70 levels or 25,000 nodes per expanded field and reports a warning; definitions exceeding 5,000 operations are rejected. The UI shows at most 40 field-level changes at a time, with full normalized records available in JSON. It does not test live endpoints, infer API shutdowns, or prove backward compatibility.
+- **Time:** `capturedAt` is a real collection timestamp. `directoryUpdated` and `directoryAdded` are source metadata. API versions may cover different generations or incomplete old documentation, and are not automatically ordered as releases. No pre-collection history is invented.
 
-Enable **Settings → General → Template repository** here. This repository does not
-need Pages enabled: its workflow builds/tests but intentionally skips deployment.
-New copies also skip deployment until `scripts/init.py` sets the tool ID to match
-their repository name. This lets you create the repo before configuring Pages.
+## Data retention and refresh
 
-## Start a new tool
+`scripts/refresh.py` downloads the APIs.guru directory and the watched specifications. The collector accepts only HTTPS URLs on `api.apis.guru`, has a 10 MB response limit and spaces requests. All requests and format validation complete before the current manifest is replaced.
 
-1. Select **Use this template → Create a new repository**, choose owner `jsdyer`,
-   a unique lowercase name such as `my-tool`, and public visibility.
-2. Clone the new repository. Use Python 3.12+ and Node 24+.
-3. Set the identity, using a slug that matches the repository name:
+- `web/data/manifest.json` lists every retained capture, newest first.
+- `web/data/captures/<UTC timestamp>.json` records the versions, source URLs, source metadata and hashes at that observation.
+- `web/data/specs/<sha256>.json` retains canonical JSON definitions. Identical documents are stored once, while each dated observation is retained.
+- The hash is SHA-256 of UTF-8 JSON with sorted keys, compact separators and a trailing newline. It verifies the stored document, not the original HTTP response bytes.
+- The default build is offline. It verifies every retained specification hash and capture reference before replacing `dist/`.
+- A failed refresh/check cannot deploy or commit new data. The last successful Pages deployment remains available. GitHub workflow notifications follow the repository owner's notification settings; this tool does not send email itself.
 
-```sh
-python3 scripts/init.py my-tool --title "My Tool" --description "Describe what this tool does."
-```
+To add an API, edit `WATCH` in `scripts/refresh.py` using an identifier from the directory, review its listed versions and source license, collect a baseline and run all checks. All listed versions of each watched API are collected, not just its preferred version.
 
-Review the category, tags and icon in `tool.json`. `access: "browser"` tells the main
-catalogue that the tool works immediately without installation. `--owner` supports a different
-GitHub owner, but only projects owned by `jsdyer` inherit the CoolCode domain.
+## Privacy
 
-4. Replace the example in `web/` and its tests. Update the privacy explanation,
-   source attribution and README to describe the real tool.
-5. Test and preview:
+The initial page fetches retained JSON from this site's static files. Selecting operations and exporting reports does not call third-party APIs. Local JSON files are read in memory, never uploaded, and are discarded when the page is closed or reloaded. Do not include credentials in specifications that you publish into the repository. User files are not added to the collection.
 
-```sh
+The page loads Google Fonts and CoolCode's shared visit counter under the site's normal policy. External source links open only when clicked. No API keys or browser storage are used.
+
+## Development
+
+Requires Node.js 24 and Python 3.12. No application dependencies or bundler are required.
+
+```bash
+# Optional network refresh; writes a real capture after validating all sources
+python3 scripts/refresh.py
+
+# Offline checks and build
 node --test tests/*.test.mjs
 python3 -m unittest discover -s tests -v
 python3 scripts/build.py
-python3 -m http.server 8000 --directory dist
 ```
 
-Open `http://localhost:8000/`. The example trims lines, skips blanks and removes exact
-duplicates, preserving first-seen order and capitalization. It processes the text in tab memory. Update that explanation if your app behaves differently.
+CI installs test-only Playwright dependencies from `tests/browser-requirements.txt` and runs `tests/browser_smoke.py` against the built app at a project subpath. It covers initial real data, search/filter selection, a single-version inventory, local JSON comparison, safe text rendering, downloads and desktop/mobile layout. Review screenshots are uploaded as an artifact.
 
-CI also tests the browser flow and mobile layout at a project subpath. Replace the
-sample assertions in `tests/browser_smoke.py` when implementing your own UI. To run
-that check locally (optional for ordinary preview):
-
-```sh
-python3 -m venv .venv
-. .venv/bin/activate
-python3 -m pip install -r tests/browser-requirements.txt
-python3 -m playwright install --with-deps chromium
-python3 tests/browser_smoke.py
-```
-
-Playwright is a test-only dependency; the app and its static build do not use it.
-
-## Publish and register
-
-When the actual tool is ready, in the **new tool repository** set **Settings → Pages → Build and deployment →
-Source → GitHub Actions**. Push to `main`, or manually run **Browser tool · Check and
-publish** after enabling Pages. If the initial deployment ran before Pages was enabled,
-enable it and rerun. PRs only check/build and provide a downloadable preview artifact.
-
-Keep `{{VISIT_COUNTER}}` in the page head and `{{ISSUE_LINK}}` in the footer when replacing the starter UI. The build enables these for initialized CoolCode repositories. The shared counter records aggregate opens on coolcode.ca by public tool ID. Toolbox inputs and URL parameters are excluded. The issue link opens a reporting form with the tool already selected.
-
-Keep app-owned asset paths and module imports relative. Check `https://coolcode.ca/my-tool/`.
-Do not add a CNAME or set `coolcode.ca` as this project's custom domain; the account
-site supplies it. Only successful `main` builds deploy.
-
-After verifying the app, copy the reviewed object from `tool.json` into `data/tools.json`
-in [the main site](https://github.com/jsdyer/jsdyer.github.io). Each tool still builds
-independently. Update the hub record when listing metadata changes; the hub is the
-authority for discovery. Ordinary app updates touch only this repository.
-
-The main site separates **Use in your browser** from **Install yourself**. An app
-that asks for a file is still a browser tool. Standalone Linux packages should start
-in their own repositories with their own build/release workflow, rather than copying
-this browser-only scaffold. Their hub record uses `access: "install"`, links to an
-installation guide, and includes `requirements`.
+PRs check and build. Successful `main` builds deploy through GitHub Pages. The weekly/manual refresh is retained by `github-actions[bot]` only after tests, offline build and browser checks succeed. The workflow needs repository Contents write permission and Pages configured to use GitHub Actions. No CNAME or Cloudflare change is required.
 
 ## Files
 
-| Path | Purpose |
-| --- | --- |
-| `tool.json` | Page metadata and a ready-to-copy catalogue record |
-| `web/` | HTML, responsive CSS, DOM interactions and separate model logic |
-| `scripts/build.py` | Escape metadata and build `web/` into `dist/` |
-| `scripts/init.py` | Set a new project's identity |
-| `tests/` | Application and builder tests |
-| `.github/workflows/pages.yml` | Check PRs and publish successful main builds |
-| `AGENTS.md` | Instructions for future coding work |
-
-Namespace optional storage as `coolcode:<tool-id>:<key>`; CoolCode paths share a
-browser origin. Don't save pasted text/uploads by default. Document external APIs
-and send only the information needed for the selected action. Never embed secrets.
-
-Scheduled refresh is opt-in. Validate source data before deploying, display its date,
-and preserve the last good deployment on failure. Public-repository schedules can
-stop after 60 days without repository activity.
-
-Templates don't propagate future edits automatically. Adopt fixes explicitly and
-consider a versioned reusable workflow once several tools confirm the shared process.
-Choose and add the intended software license before distributing a new project.
+- `web/model.mjs`: pure parser, reference handling, comparison and CSV generation.
+- `web/app.mjs`: selection, safe DOM rendering, local import and exports.
+- `scripts/refresh.py`: validated public-data collection and archive verification.
+- `scripts/build.py`: offline static build, metadata and archive checks.
+- `tests/`: model, archive integrity/failure handling, build and browser checks.
+- `tool.json`: CoolCode catalogue entry.
