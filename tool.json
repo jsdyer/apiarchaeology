@@ -17,6 +17,7 @@
   "access": "browser",
   "data_info": {
     "mode": "mixed",
-    "detail": "Weekly retained APIs.guru definitions, with optional local OpenAPI JSON comparison."
+    "detail": "Weekly retained APIs.guru definitions, with optional local OpenAPI JSON comparison.",
+    "cadence": "Weekly"
   }
 }
