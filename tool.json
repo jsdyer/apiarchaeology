@@ -2,7 +2,7 @@
   "id": "apiarchaeology",
   "title": "API Archaeology",
   "description": "Inspect published API definitions, compare operations and schemas, and follow dated specification captures.",
-  "category": "developer",
+  "category": "projects",
   "tags": [
     "api",
     "openapi",
