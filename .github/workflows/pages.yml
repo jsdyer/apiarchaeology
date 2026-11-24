@@ -27,7 +27,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          persist-credentials: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.refresh) }}
+          fetch-depth: 0
+          persist-credentials: ${{ github.event_name != 'pull_request' }}
+      - name: Detect collection changes
+        id: source_changes
+        if: github.event_name == 'push'
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null ||
+             ! git diff --quiet "$BEFORE" "$GITHUB_SHA" -- scripts/refresh.py scripts/collect.py scripts/source.py scripts/public_download.py tests/browser_smoke.py .github/workflows/pages.yml; then
+            echo "refresh=true" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -35,7 +46,7 @@ jobs:
         with:
           node-version: '24'
       - name: Capture selected public specifications
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.refresh))
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.refresh) || steps.source_changes.outputs.refresh == 'true')
         run: python3 scripts/refresh.py
       - name: Test the application
         run: node --test tests/*.test.mjs
@@ -62,7 +73,7 @@ jobs:
       - name: Check application in a browser
         run: python3 tests/browser_smoke.py
       - name: Retain the validated capture
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.refresh))
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.refresh) || steps.source_changes.outputs.refresh == 'true')
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
